@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Questions.API.Models;
+using Questions.API.DtoModels;
 
 namespace Questions.API.Controllers
 {
@@ -29,7 +30,7 @@ namespace Questions.API.Controllers
                 return NotFound();
             }
 
-            return Ok(answer);
+            return Ok(new AnswerDTO {AnswerId = answer.AnswerId, AnswerText = answer.AnswerText, QuestionId = answer.QuestionId});
         }
 
         // GET api/answer/2
@@ -37,8 +38,8 @@ namespace Questions.API.Controllers
         public ActionResult Get()
         {
             var answers = _context.Answers.OrderBy(q => q.AnswerId);
-
-            return Ok(answers);
+            var dto = answers.Select(x => new AnswerDTO {AnswerId = x.AnswerId, AnswerText = x.AnswerText, QuestionId = x.QuestionId});
+            return Ok(dto);
         }
 
         // POST api/question
@@ -60,7 +61,7 @@ namespace Questions.API.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var answer = _context.Answers.Where(q => q.AnswerId == id).FirstOrDefault();
+            var answer = _context.Answers.Where(a => a.AnswerId == id).FirstOrDefault();
 
             if (answer == null)
             {
@@ -68,6 +69,7 @@ namespace Questions.API.Controllers
             }
 
             _context.Answers.Remove(answer);
+            _context.SaveChangesAsync();
 
             return Ok(answer);
         }

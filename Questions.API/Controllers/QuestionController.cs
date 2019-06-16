@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Questions.API.Models;
+using Microsoft.EntityFrameworkCore;
+using Questions.API.DtoModels;
 
 namespace Questions.API.Controllers
 {
@@ -29,7 +31,9 @@ namespace Questions.API.Controllers
                 return NotFound();
             }
 
-            return Ok(question);
+            return Ok(new QuestionDTO {
+                    QuestionId = question.QuestionId, QuestionText = question.QuestionText
+                });
         }
 
         // GET api/question/2
@@ -37,8 +41,8 @@ namespace Questions.API.Controllers
         public ActionResult Get()
         {
             var questions = _context.Questions.OrderBy(q => q.QuestionId);
-
-            return Ok(questions);
+            var dto = questions.Select(x => new QuestionDTO {QuestionId = x.QuestionId, QuestionText = x.QuestionText});
+            return Ok(dto);
         }
 
         [HttpGet("{id}/answers")]
@@ -52,8 +56,8 @@ namespace Questions.API.Controllers
             }
 
             var answers = _context.Answers.Where(a => a.QuestionId == question.QuestionId);
-
-            return Ok(answers);
+            var dto = answers.Select(x => new AnswerDTO {AnswerId = x.AnswerId, AnswerText = x.AnswerText, QuestionId = x.QuestionId});
+            return Ok(dto);
         }
 
         // POST api/question
@@ -83,6 +87,7 @@ namespace Questions.API.Controllers
             }
 
             _context.Questions.Remove(question);
+            _context.SaveChangesAsync();
 
             return Ok(question);
         }
